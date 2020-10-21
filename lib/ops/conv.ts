@@ -10,13 +10,24 @@ export abstract class Conv implements Operator {
   abstract run(inferenceHandler: InferenceHandler, inputs: Tensor[]): Tensor[]|Promise<Tensor[]>;
 
   initialize(attributes: Attribute): void {
-    // TODO : Make this generic enough to compute default attributes for multi-dimensional conv
     this.autoPad = attributes.getString('auto_pad', 'NOTSET');
-    this.dilations = attributes.getInts('dilations', [1, 1]);
+    this.dilations = attributes.getInts('dilations', []);
     this.group = attributes.getInt('group', 1);
     this.kernelShape = attributes.getInts('kernel_shape', []);
-    this.pads = attributes.getInts('pads', [0, 0, 0, 0]);
-    this.strides = attributes.getInts('strides', [1, 1]);
+    this.pads = attributes.getInts('pads', []);
+    this.strides = attributes.getInts('strides', []);
+  }
+
+  getDilation(axis: number): number {
+    return this.dilations.length === 0 ? 1 : this.dilations[axis];
+  }
+
+  getPadding(axis: number): number {
+    return this.dilations.length === 0 ? 0 : this.pads[axis];
+  }
+
+  getStride(axis: number): number {
+    return this.dilations.length === 0 ? 1 : this.strides[axis];
   }
 
   checkInputs(inputs: Tensor[]): boolean {
@@ -26,10 +37,13 @@ export abstract class Conv implements Operator {
       return false;
     }
 
-    // TODO : Need to add support for multi-dimensional conv
-    // currently only support 2-dimensional conv
-    if (inputs[0].dims.length !== 4 || inputs[1].dims.length !== 4) {
+    if (inputs[0].dims.length < 3 || inputs[1].dims.length < 3) {
+      // At least one data axis is required for the input and kernel
       return false;
+    }
+
+    if (inputs[0].dims.length !== inputs[1].dims.length) {
+      // The kernel and input should have the same rank
     }
 
     // FILTER_IN_CHANNEL should be equal to DATA_CHANNEL

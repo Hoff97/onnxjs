@@ -1116,9 +1116,10 @@ export class PoolConvUtil {
       }
     } else {
       for (let dim = 0; dim < inputDims.length - 2; dim++) {
+        const stride = strides.length === 0 ? 1 : strides[dim];
+        const dilation = dilations.length === 0 ? 1 : dilations[dim];
         outputDims.push(PoolConvUtil.adjustPadAndReturnShape(
-            inputDims[dim + 2], strides[dim], dilations[dim], kernelShape[dim], pads, dim, dim + inputDims.length - 2,
-            autoPad));
+            inputDims[dim + 2], stride, dilation, kernelShape[dim], pads, dim, dim + inputDims.length - 2, autoPad));
       }
     }
   }
@@ -1149,7 +1150,9 @@ export class PoolConvUtil {
           throw new Error(`Unsupported AutoPad type`);
       }
     } else {
-      return Math.floor(((inSize + pads[padHeadIndex] + pads[padTailIndex] - dkernel) / stride) + 1);
+      const headPad = pads.length === 0 ? 0 : pads[padHeadIndex];
+      const tailPad = pads.length === 0 ? 0 : pads[padTailIndex];
+      return Math.floor(((inSize + headPad + tailPad - dkernel) / stride) + 1);
     }
   }
 }
