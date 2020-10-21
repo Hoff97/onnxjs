@@ -18,18 +18,6 @@ export abstract class Conv implements Operator {
     this.strides = attributes.getInts('strides', []);
   }
 
-  getDilation(axis: number): number {
-    return this.dilations.length === 0 ? 1 : this.dilations[axis];
-  }
-
-  getPadding(axis: number): number {
-    return this.dilations.length === 0 ? 0 : this.pads[axis];
-  }
-
-  getStride(axis: number): number {
-    return this.dilations.length === 0 ? 1 : this.strides[axis];
-  }
-
   checkInputs(inputs: Tensor[]): boolean {
     // Refer to the below link for all input checks
     // https://github.com/onnx/onnx/blob/master/docs/Operators.md#Conv
