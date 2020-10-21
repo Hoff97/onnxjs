@@ -8,6 +8,7 @@ import {WasmBinaryOp} from './ops/binary-op';
 import {WasmClip} from './ops/clip';
 import {WasmConv} from './ops/conv';
 import {WasmCumSum} from './ops/cumsum';
+import {WasmEinsum} from './ops/einsum';
 import {WasmGemm} from './ops/gemm';
 import {WasmInstanceNormalization} from './ops/instance-normalization';
 import {WasmMatMul} from './ops/matmul';
@@ -38,4 +39,5 @@ export const WASM_OP_RESOLVE_RULES: ReadonlyArray<OpSet.ResolveRule> = [
   ['Sum', '', '6+', () => new WasmSum()],  // TODO: support multidirectional broadcast for Sum-8
   ['Xor', '', '7+', () => new WasmBinaryOp(['bool'], 'Xor')],
   ['CumSum', '', '11+', () => new WasmCumSum()],
+  ['Einsum', '', '12+', () => new WasmEinsum()]
 ];

@@ -11,6 +11,7 @@ import {WebGLConcat} from './ops/concat';
 import {WebGLConv} from './ops/conv';
 import {WebGLCumSum} from './ops/cumsum';
 import {WebGLDropout} from './ops/dropout';
+import {WebGLEinsum} from './ops/einsum';
 import {WebGLElu} from './ops/elu';
 import {WebGLFlatten} from './ops/flatten';
 import {WebGLGather} from './ops/gather';
@@ -44,8 +45,7 @@ export const WEBGL_OP_RESOLVE_RULES: ReadonlyArray<OpSet.ResolveRule> = [
   ['AveragePool', '', '7-10', () => new WebGLAveragePool()],  // TODO: support new attributes for AveragePool-10
   ['BatchNormalization', '', '7+', () => new WebGLBatchNormalization()],
   ['Ceil', '', '6+', () => new unaryOps.WebGLUnaryOp(FLOAT_TYPES, unaryOps.glslCeil())],
-  ['Clip', '', '6-10', () => new WebGLClip()],
-  ['Concat', '', '4+', () => new WebGLConcat()],
+  ['Clip', '', '6-10', () => new WebGLClip()], ['Concat', '', '4+', () => new WebGLConcat()],
   ['Conv', '', '1+', () => new WebGLConv()],
   ['Cos', '', '7+', () => new unaryOps.WebGLUnaryOp(FLOAT_TYPES, unaryOps.glslCos())],
   ['Div', '', '7+', () => new binaryOps.WebGLBinaryOp(NUMBER_TYPES, binaryOps.glslDiv())],
@@ -55,10 +55,8 @@ export const WEBGL_OP_RESOLVE_RULES: ReadonlyArray<OpSet.ResolveRule> = [
   ['Exp', '', '6+', () => new unaryOps.WebGLUnaryOp(FLOAT_TYPES, unaryOps.glslExp())],
   ['Flatten', '', '1+', () => new WebGLFlatten()],
   ['Floor', '', '6+', () => new unaryOps.WebGLUnaryOp(FLOAT_TYPES, unaryOps.glslFloor())],
-  ['Gather', '', '1+', () => new WebGLGather()],
-  ['Gemm', '', '7-10', () => new WebGLGemm(false)],
-  ['Gemm', '', '11+', () => new WebGLGemm(true)],
-  ['GlobalAveragePool', '', '1+', () => new WebGLGlobalAveragePool()],
+  ['Gather', '', '1+', () => new WebGLGather()], ['Gemm', '', '7-10', () => new WebGLGemm(false)],
+  ['Gemm', '', '11+', () => new WebGLGemm(true)], ['GlobalAveragePool', '', '1+', () => new WebGLGlobalAveragePool()],
   ['GlobalMaxPool', '', '1+', () => new WebGLGlobalMaxPool()],
   ['Greater', '', '7+', () => new binaryOps.WebGLBinaryOp(NUMBER_TYPES, binaryOps.glslGreater(), undefined, 'bool')],
   ['Identity', '', '1+', () => new unaryOps.WebGLUnaryOp(NUMBER_TYPES, unaryOps.glslIdentity())],
@@ -88,8 +86,7 @@ export const WEBGL_OP_RESOLVE_RULES: ReadonlyArray<OpSet.ResolveRule> = [
   ['Sigmoid', '', '6+', () => new unaryOps.WebGLUnaryOp(FLOAT_TYPES, unaryOps.glslSigmoid())],
   ['Sin', '', '7+', () => new unaryOps.WebGLUnaryOp(FLOAT_TYPES, unaryOps.glslSin())],
   ['Slice', '', '10+', () => new WebGLSliceV10()],  // TODO: support 'steps' for Slice-10
-  ['Slice', '', '1-9', () => new WebGLSlice()],
-  ['Softmax', '', '1+', () => new WebGLSoftmax()],
+  ['Slice', '', '1-9', () => new WebGLSlice()], ['Softmax', '', '1+', () => new WebGLSoftmax()],
   // 'Split' operator has an optional attribute 'split'
   // this attribute determines how the specified axis of input data
   // is split. When the attribute is missing, we need the count of number of outputs
@@ -101,10 +98,8 @@ export const WEBGL_OP_RESOLVE_RULES: ReadonlyArray<OpSet.ResolveRule> = [
   ['Sum', '', '6+', () => new WebGLSum()],  // TODO: support multidirectional broadcast for Sum-8
   ['Tan', '', '7+', () => new unaryOps.WebGLUnaryOp(FLOAT_TYPES, unaryOps.glslTan())],
   ['Tanh', '', '6+', () => new unaryOps.WebGLUnaryOp(FLOAT_TYPES, unaryOps.glslTanh())],
-  ['Tile', '', '6+', () => new WebGLTile()],
-  ['Transpose', '', '1+', () => new WebGLTranspose()],
-  ['Upsample', '', '7-8', () => new WebGLUpsample()],
-  ['Unsqueeze', '', '1+', () => new WebGLUnsqueeze()],
+  ['Tile', '', '6+', () => new WebGLTile()], ['Transpose', '', '1+', () => new WebGLTranspose()],
+  ['Upsample', '', '7-8', () => new WebGLUpsample()], ['Unsqueeze', '', '1+', () => new WebGLUnsqueeze()],
   ['Xor', '', '7+', () => new binaryOps.WebGLBinaryOp(['bool'], binaryOps.glslXor())],
-  ['CumSum', '', '11+', () => new WebGLCumSum()],
+  ['CumSum', '', '11+', () => new WebGLCumSum()], ['Einsum', '', '1+', () => new WebGLEinsum()]
 ];

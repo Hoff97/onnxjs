@@ -231,7 +231,11 @@
       "v{11,12}/test_cumsum_1d_reverse_exclusive",
       "v{11,12}/test_cumsum_2d_axis_0",
       "v{11,12}/test_cumsum_2d_axis_1",
-      "v{11,12}/test_cumsum_2d_negative_axis"
+      "v{11,12}/test_cumsum_2d_negative_axis",
+      "v12/test_einsum_batch_matmul",
+      "v12/test_einsum_inner_prod",
+      "v12/test_einsum_sum",
+      "v12/test_einsum_transpose"
     ],
     "ops": [
       "abs.jsonc",
@@ -272,7 +276,8 @@
       "tan.jsonc",
       "transpose.jsonc",
       "xor.jsonc",
-      "cumsum.jsonc"
+      "cumsum.jsonc",
+      "einsum.jsonc"
     ]
   },
   "webgl": {
@@ -498,7 +503,11 @@
       "v{11,12}/test_cumsum_1d_reverse_exclusive",
       "v{11,12}/test_cumsum_2d_axis_0",
       "v{11,12}/test_cumsum_2d_axis_1",
-      "v{11,12}/test_cumsum_2d_negative_axis"
+      "v{11,12}/test_cumsum_2d_negative_axis",
+      "v12/test_einsum_batch_matmul",
+      "v12/test_einsum_inner_prod",
+      "v12/test_einsum_sum",
+      "v12/test_einsum_transpose"
     ],
     "ops": [
       "abs.jsonc",
@@ -541,7 +550,8 @@
       "tan.jsonc",
       "transpose.jsonc",
       "xor.jsonc",
-      "cumsum.jsonc"
+      "cumsum.jsonc",
+      "einsum.jsonc"
     ]
   },
   "wasm": {
@@ -644,7 +654,11 @@
       "v{11,12}/test_cumsum_1d_reverse_exclusive",
       "v{11,12}/test_cumsum_2d_axis_0",
       "v{11,12}/test_cumsum_2d_axis_1",
-      "v{11,12}/test_cumsum_2d_negative_axis"
+      "v{11,12}/test_cumsum_2d_negative_axis",
+      "v12/test_einsum_batch_matmul",
+      "v12/test_einsum_inner_prod",
+      "v12/test_einsum_sum",
+      "v12/test_einsum_transpose"
     ],
     "ops": [
       // Check in op tests that have native Wasm implementations
@@ -660,7 +674,8 @@
       "or.jsonc",
       "xor.jsonc",
       "matmul.jsonc",
-      "cumsum.jsonc"
+      "cumsum.jsonc",
+      "einsum.jsonc"
     ]
   }
 }

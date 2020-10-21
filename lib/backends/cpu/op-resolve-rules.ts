@@ -12,6 +12,7 @@ import {CpuConcat} from './ops/concat';
 import {CpuConv} from './ops/conv';
 import {CpuCumSum} from './ops/cumsum';
 import {CpuDropout} from './ops/dropout';
+import {CpuEinsum} from './ops/einsum';
 import {CpuExpand} from './ops/expand';
 import {CpuFlatten} from './ops/flatten';
 import {CpuGather} from './ops/gather';
@@ -114,4 +115,5 @@ export const CPU_OP_RESOLVE_RULES: ReadonlyArray<OpSet.ResolveRule> = [
   ['Upsample', '', '9', () => new CpuUpsampleV9()],
   ['Xor', '', '7+', () => new CpuBinaryOp(['bool'], (e1, e2) => (e1 ^ e2))],
   ['CumSum', '', '11+', () => new CpuCumSum()],
+  ['Einsum', '', '12+', () => new CpuEinsum()]
 ];

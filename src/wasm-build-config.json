@@ -23,6 +23,8 @@
     "_instance_normalization_f32",
     "_sum_f32",
     "_softmax_f32",
-    "_cumsum_f32"
+    "_cumsum_f32",
+    "_einsum_f32",
+    "_einsum_single_f32"
   ]
 }
