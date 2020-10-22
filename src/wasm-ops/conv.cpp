@@ -22,6 +22,7 @@ void conv_f32(void *data) {
       PARAM_INT32_PTR(data, dataIndex[11]), PARAM_INT32(data, dataIndex[12]));
 }
 
+// TODO: There's lots of room for optimization here
 // Core operator implementation
 void conv2D_f32_imp(float *X, int *X_shape, float *W, int *W_shape, float *Y,
                     int *Y_shape, float *bias, int *dilations, int group,
