@@ -5,6 +5,11 @@
 #include <math.h>
 
 size_t ShapeUtils::size_from_dims(const std::vector<int32_t> &dims) {
+  return size_from_dims(dims, 0);
+}
+
+size_t ShapeUtils::size_from_dims(const std::vector<int32_t> &dims,
+                                  size_t startAxis) {
   auto rank = dims.size();
   if (rank == 0) {
     return 1;
@@ -13,8 +18,8 @@ size_t ShapeUtils::size_from_dims(const std::vector<int32_t> &dims) {
     return dims[0];
   }
   size_t size = 1;
-  for (auto &e : dims) {
-    size *= e;
+  for (int32_t i = startAxis; i < dims.size(); i++) {
+    size *= dims.at(i);
   }
   return size;
 }

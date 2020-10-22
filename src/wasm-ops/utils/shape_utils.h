@@ -7,6 +7,7 @@
 
 namespace ShapeUtils {
 size_t size_from_dims(const std::vector<int32_t> &dims);
+size_t size_from_dims(const std::vector<int32_t> &dims, size_t startAxis);
 std::vector<int32_t> compute_strides(const std::vector<int32_t> &dims);
 // Fills in values in the strides vector. Assumes it is of the required size.
 void compute_strides(const std::vector<int32_t> &dims,

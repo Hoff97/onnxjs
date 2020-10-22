@@ -5,7 +5,6 @@ import {Conv} from '../../../ops/conv';
 import {Tensor} from '../../../tensor';
 import {PoolConvUtil} from '../../../util';
 import {WasmBinding} from '../../../wasm-binding';
-import {PerformanceData} from '../../../wasm-binding-core';
 import {WasmInferenceHandler} from '../inference-handler';
 
 export class WasmConv extends Conv {
@@ -17,9 +16,7 @@ export class WasmConv extends Conv {
     // if kernelShape is not specified in the attributes of this op, infer it from the weight tensor dims
     if (this.kernelShape.length === 0) {
       const wDims = inputs[1].dims;
-      for (let i = 2; i < wDims.length; ++i) {
-        this.kernelShape.push(wDims[i]);
-      }
+      this.kernelShape = wDims.slice(2);
     }
 
     // create output Tensor after determining output size (after adjusting pads based on 'autoPad' attribute)
@@ -28,68 +25,31 @@ export class WasmConv extends Conv {
     const y = new Tensor(outputDims, x.type);
 
     // determine number of threads needed to process
-    const numThreads = determineNumThreads(x.dims[0], this.group, w.dims[0], WasmBinding.workerNumber);
+    // const numThreads = determineNumThreads(x.dims[0], this.group, w.dims[0], WasmBinding.workerNumber);
 
-    // no multi-threading
-    if (numThreads === 1) {
-      WasmBinding.getInstance().ccall(
-          '_conv_f32', [x.floatData, 'float32ptr'], [x.dims, 'int32ptr'], [w.floatData, 'float32ptr'],
-          [w.dims, 'int32ptr'], [y.floatData, 'float32ptr', 'out'], [y.dims, 'int32ptr'],
-          [b ? b.floatData : null, 'float32ptr'], [this.dilations, 'int32ptr'], [this.group, 'int32'],
-          [this.pads, 'int32ptr'], [this.strides, 'int32ptr']);
-      return [y];
-    }
+    const dataRank = x.dims.length - 2;  // Convolution dimension (1D, 2D, 3D...)
 
-    // multi-threaded using web-workers
-    else {
-      // data pre-processing
-      const wDimsSp = w.dims.slice(0);
-      wDimsSp[0] = Math.floor(w.dims[0] / numThreads);
-      const wSizeSp = wDimsSp[0] * wDimsSp[1] * wDimsSp[2] * wDimsSp[3];
+    const dilations = this.dilations.length > 0 ? this.dilations : new Array(dataRank).fill(1);
+    const pads = this.pads.length > 0 ? this.pads : new Array(dataRank * 2).fill(0);
+    const strides = this.strides.length > 0 ? this.strides : new Array(dataRank).fill(1);
 
-      const wDimsFinal = w.dims.slice(0);
-      wDimsFinal[0] = w.dims[0] - (numThreads - 1) * wDimsSp[0];
+    WasmBinding.getInstance().ccall(
+        '_conv_f32',
+        [x.floatData, 'float32ptr'],
+        [x.dims, 'int32ptr'],
+        [w.floatData, 'float32ptr'],
+        [w.dims, 'int32ptr'],
+        [y.floatData, 'float32ptr', 'out'],
+        [y.dims, 'int32ptr'],
+        [b ? b.floatData : null, 'float32ptr'],
+        [dilations, 'int32ptr'],
+        [this.group, 'int32'],
+        [pads, 'int32ptr'],
+        [strides, 'int32ptr'],
+        [dataRank, 'int32'],
+    );
 
-      const yDimsSp = [1, wDimsSp[0], outputDims[2], outputDims[3]];
-      const ySizeSp = wDimsSp[0] * outputDims[2] * outputDims[3];
-
-      const yDimsFinal = [1, wDimsFinal[0], outputDims[2], outputDims[3]];
-
-      const wArray = new Array<Float32Array>(numThreads);
-      const yArray = new Array<Float32Array>(numThreads);
-      const bArray = new Array<Float32Array>(numThreads);
-      const workerTasks = new Array<Promise<PerformanceData>>(numThreads - 1);
-
-      // function calls
-      for (let i = 0; i < numThreads; ++i) {
-        if (i !== numThreads - 1) {
-          wArray[i] = w.floatData.subarray(i * wSizeSp, (i + 1) * wSizeSp) as Float32Array;
-          yArray[i] = y.floatData.subarray(i * ySizeSp, (i + 1) * ySizeSp) as Float32Array;
-          if (b) {
-            bArray[i] = b.floatData.subarray(i * wDimsSp[0], (i + 1) * wDimsSp[0]) as Float32Array;
-          }
-          workerTasks[i] = WasmBinding.getInstance().ccallRemote(
-              i, '_conv_f32', [x.floatData, 'float32ptr'], [x.dims, 'int32ptr'], [wArray[i], 'float32ptr'],
-              [wDimsSp, 'int32ptr'], [yArray[i], 'float32ptr', 'out'], [yDimsSp, 'int32ptr'],
-              [bArray.length > 0 ? bArray[i] : null, 'float32ptr'], [this.dilations, 'int32ptr'], [this.group, 'int32'],
-              [this.pads, 'int32ptr'], [this.strides, 'int32ptr']);
-        } else {
-          wArray[i] = w.floatData.subarray(i * wSizeSp) as Float32Array;
-          yArray[i] = y.floatData.subarray(i * ySizeSp) as Float32Array;
-          if (b) {
-            bArray[i] = b.floatData.subarray(i * wDimsSp[0]) as Float32Array;
-          }
-          WasmBinding.getInstance().ccall(
-              '_conv_f32', [x.floatData, 'float32ptr'], [x.dims, 'int32ptr'], [wArray[i], 'float32ptr'],
-              [wDimsFinal, 'int32ptr'], [yArray[i], 'float32ptr', 'out'], [yDimsFinal, 'int32ptr'],
-              [bArray.length > 0 ? bArray[i] : null, 'float32ptr'], [this.dilations, 'int32ptr'], [this.group, 'int32'],
-              [this.pads, 'int32ptr'], [this.strides, 'int32ptr']);
-        }
-      }
-
-      await Promise.all(workerTasks);
-      return [y];
-    }
+    return [y];
   }
 
   // overriding the checkInputTypes() in the base class because Wasm backend has special type limitations
@@ -110,7 +70,7 @@ export class WasmConv extends Conv {
 // This function will determine the number of threads
 // The strategy to parallelize is to parallelize on number of filter maps in the kernel
 // (i.e.) number of output channels
-function determineNumThreads(batchSize: number, group: number, numFilterMaps: number, numWebWorkers: number): number {
+/*function determineNumThreads(batchSize: number, group: number, numFilterMaps: number, numWebWorkers: number): number {
   // single threaded if:
   // 1) batch size is not 1 (data splitting logic across threads is specific to batch size being 1)
   // 2) multi-threading not supported yet for mulitple groups
@@ -123,4 +83,4 @@ function determineNumThreads(batchSize: number, group: number, numFilterMaps: nu
   // multi-threaded:
   // determine number of threads
   return Math.min(numFilterMaps, numWebWorkers + 1);
-}
+}*/

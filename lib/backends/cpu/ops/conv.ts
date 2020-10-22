@@ -75,7 +75,6 @@ export function conv(
         for (let oIx = 0; oIx < outputSize; oIx++) {
           let result = Y.get(outputIndices) as number;
 
-
           const kernelIndices = new Array(K.length).fill(0);
           kernelIndices.unshift(m, cg);
           for (let kIx = 0; kIx < kernelSize; kIx++) {
