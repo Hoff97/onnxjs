@@ -33,9 +33,9 @@ export class CpuConv extends Conv {
 export function conv(
     Y: Tensor, X: Tensor, W: Tensor, B: Tensor|undefined, dilations: ReadonlyArray<number>, group: number,
     pads: ReadonlyArray<number>, strides: ReadonlyArray<number>) {
-  const N = X.dims[0];  // Batch size
-  const C = X.dims[1];  // Number of input channels
-  // const D = X.dims.slice(2);  // Data dimensions
+  const N = X.dims[0];        // Batch size
+  const C = X.dims[1];        // Number of input channels
+  const D = X.dims.slice(2);  // Data dimensions
 
   const M = W.dims[0];        // Output channels
   const K = W.dims.slice(2);  // Kernel dimensions
@@ -75,18 +75,33 @@ export function conv(
         for (let oIx = 0; oIx < outputSize; oIx++) {
           let result = Y.get(outputIndices) as number;
 
+
           const kernelIndices = new Array(K.length).fill(0);
           kernelIndices.unshift(m, cg);
           for (let kIx = 0; kIx < kernelSize; kIx++) {
             const inputIx = [n, c];
+
+            let skip = false;
             for (let axis = 0; axis < dataRank; axis++) {
               const stride = strides.length === 0 ? 1 : strides[axis];
               const pad = pads.length === 0 ? 0 : pads[axis];
               const dilation = dilations.length === 0 ? 1 : dilations[axis];
 
-              inputIx.push(outputIndices[axis + 2] * stride - pad + kernelIndices[axis + 2] * dilation);
+              const ix = outputIndices[axis + 2] * stride - pad + kernelIndices[axis + 2] * dilation;
+
+              if (ix < 0 || ix >= D[axis]) {
+                skip = true;
+                break;
+              }
+
+              inputIx.push(ix);
             }
-            result += (W.get(kernelIndices) as number) * (X.get(inputIx) as number);
+
+            if (!skip) {
+              const Wi = W.get(kernelIndices) as number;
+              const Xi = X.get(inputIx) as number;
+              result += Wi * Xi;
+            }
 
             ShapeUtil.incrementIndex(kernelIndices, W.dims);
           }
